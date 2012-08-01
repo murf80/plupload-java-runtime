@@ -109,11 +109,18 @@
       });
 
       document.body.appendChild(appletContainer);
+      
+      // allow users to override cache value
+      var cache_version = "20062012";
+      if (uploader.settings.cache_version !== undefined)
+      {
+        cache_version = uploader.settings.cache_version;
+      }
 
       applet.inject(appletContainer, {
         archive: url,
         cache_archive: url,
-        cache_version: "20062012",
+        cache_version: cache_version,
         id: escape(uploader.id),
         code: 'plupload.Plupload',
         callback: 'plupload.applet.pluploadjavatrigger',
