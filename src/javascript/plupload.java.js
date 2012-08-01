@@ -48,7 +48,13 @@
           container = document.body,
           features = this.getFeatures(),
           url = uploader.settings.java_applet_url,
-          log_level = uploader.settings.log_level || /*LOG_LEVEL_ERROR*/5;
+          log_level;
+          
+      var log_level = 5;
+      if (uploader.settings.log_level !== undefined)
+      {
+        log_level = uploader.settings.log_level;
+      }
 
       if(!features.java){
         callback({success : false});
