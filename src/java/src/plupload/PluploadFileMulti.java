@@ -162,18 +162,18 @@ public class PluploadFileMulti /*extends Thread*/{
 			
 			@Override
 			public void run(){
-					try{
-						doUpload();
-					}
-					catch(IOException e){
-						e.printStackTrace();
-						ioErrorAction(e);
-					}
-					catch(Exception e){
-						e.printStackTrace();
-						genericErrorAction(e);
-					}
+				try{
+					doUpload();
 				}
+				catch(IOException e){
+					e.printStackTrace();
+					ioErrorAction(e);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+					genericErrorAction(e);
+				}
+			}
 		};
 		uploadThread.start();
 	}

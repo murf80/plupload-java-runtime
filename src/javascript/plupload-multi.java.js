@@ -144,8 +144,8 @@
         });
       }
       
-      uploader.bind("AddUploader", function(up){
-        getApplet().addUploader();
+      uploader.bind("AddUploader", function(up, multi_upload_instance_id, uploader_url){
+        getApplet().addUploader(uploader_url, multi_upload_instance_id);
       });
       
       uploader.bind("UploadFiles", function(up, multi_upload_instance_id) {
@@ -157,21 +157,7 @@
       });
 
       uploader.bind("UploadFile", function(up, file, multi_upload_instance_id) {
-          var settings = up.settings,
-              abs_url = location.protocol + '//' + location.host;
-
-          if(settings.url.charAt(0) === "/"){
-            abs_url += settings.url;
-          }
-          else if(settings.url.slice(0,4) === "http"){
-            abs_url = settings.url;
-          }
-          else{
-            // relative
-            abs_url += location.pathname.slice(0, location.pathname.lastIndexOf('/')) + '/' + settings.url;
-          }
-
-          getApplet().uploadFile(multi_upload_instance_id, file.id, abs_url, document.cookie, settings.chunk_size || 0, settings.retries || 3);
+        getApplet().uploadFile(multi_upload_instance_id, file.id, document.cookie, up.settings.chunk_size || 0, up.settings.retries || 3);
       });
 
       uploader.bind("SelectFiles", function(up, multi_upload_instance_id){

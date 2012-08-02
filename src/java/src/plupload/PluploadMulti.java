@@ -54,7 +54,7 @@ public class PluploadMulti extends Applet2 {
 		
 		uploaders = new HashMap<String, Uploader>();
 		plupload_id = getParameter("id");
-		info("Initialized with id " + plupload_id);
+		info("Initialized applet with id " + plupload_id);
 		publishEvent(plupload_id, Event.INIT);
 	}
 	
@@ -85,7 +85,7 @@ public class PluploadMulti extends Applet2 {
 		if (uploaders != null && !uploaders.isEmpty())
 		{
 			u = uploaders.get(id);
-			info("Found uploader with id " + id);
+			info("Found uploader with id " + u.uploader_id + " and url " + u.url);
 		}
 		else
 		{
@@ -95,15 +95,17 @@ public class PluploadMulti extends Applet2 {
 		return u;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void addUploader() {
-		Uploader u = new Uploader(this);
-		info("Adding uploader " + u.uploader_id + ", there are now " + uploaders.size() + " uploaders");
+	public void addUploader(String url, String uploaderId) {
+		Uploader u = new Uploader(this, url, uploaderId);
 		uploaders.put(u.uploader_id, u);
+		info("Added uploader " + u.uploader_id + " for url " + u.url + ", there are now " + uploaders.size() + " uploaders");
 		publishEvent(plupload_id, Event.ADDED_UPLOADER, "", u.uploader_id);
 	}
+	
+	public void addUploader(String url) {
+		addUploader(url, null);
+	}
 
-	@SuppressWarnings("unchecked")
 	public void setFileFilter(String uploader_id, final String description, final String[] filters) {
 		info("Adding file filter to uploader with id " + uploader_id + ": " + description + " " + Arrays.toString(filters));
 		final Uploader u = getUploader(uploader_id);
@@ -112,11 +114,11 @@ public class PluploadMulti extends Applet2 {
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
-	public void uploadFile(String uploader_id, final String id, final String url,
-			final String cookie, final int chunk_size, final int retries) {
-		info("Uploading file for uploader with id " + uploader_id + ": file id: " + id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
+	public void uploadFile(String uploader_id, final String file_id, final String cookie, 
+			final int chunk_size, final int retries) {
+		info("Uploading file for uploader with id " + uploader_id + ": file id: " + file_id + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		final Uploader u = getUploader(uploader_id);
-		u.uploadFile(id, url, cookie, chunk_size, retries);
+		u.uploadFile(file_id, cookie, chunk_size, retries);
 	}
 
 	public void removeFile(String uploader_id, String id) {
@@ -131,7 +133,6 @@ public class PluploadMulti extends Applet2 {
 		u.clearFiles();
 	}
 
-	@SuppressWarnings("unchecked")
 	public void openFileDialog(String uploader_id) {
 		info("Opening file dialog for uploader with id " + uploader_id);
 		final Uploader u = getUploader(uploader_id);

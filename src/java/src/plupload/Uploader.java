@@ -40,14 +40,25 @@ public class Uploader {
 	public PluploadFileMulti current_file;
 	public JFileChooser dialog;
 	public boolean dialog_open = false;
+	public String url;
 
 	public String uploader_id;
 	public Map<String, PluploadFileMulti> files;
 	
+	public Uploader(PluploadMulti parentInstance, String url) {
+		this(parentInstance, url, null);
+	}
+	
 	@SuppressWarnings("unchecked")
-	public Uploader(PluploadMulti parentInstance) {
+	public Uploader(PluploadMulti parentInstance, String url, String id) {
 		super();
-		this.uploader_id = UUID.randomUUID().toString();
+		
+		if (id != null)
+			this.uploader_id = id;
+		else
+			this.uploader_id = UUID.randomUUID().toString();
+		
+		this.url = url;
 		this.parentInstance = parentInstance;
 		
 		files = new HashMap<String, PluploadFileMulti>();
@@ -126,9 +137,9 @@ public class Uploader {
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")
-	public void uploadFile(final String id, final String url,
-			final String cookie, final int chunk_size, final int retries) {
-		final PluploadFileMulti file = files.get(id);
+	public void uploadFile(final String file_id, final String cookie, final int chunk_size, 
+			final int retries) {
+		final PluploadFileMulti file = files.get(file_id);
 		info("Uploading file: file id: " + file.id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		if (file != null) {
 			current_file = file;
