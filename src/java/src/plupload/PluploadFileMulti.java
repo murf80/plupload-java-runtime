@@ -61,10 +61,30 @@ public class PluploadFileMulti /*extends Thread*/{
 			throw new RuntimeException("WTF, no MD5?");
 		}
 	}
+	
+	private void debug(String msg)
+	{
+		log.debug("[PluploadFileMulti] file id [" + id + "]: " + msg);
+	}
+	
+	private void info(String msg)
+	{
+		log.info("[PluploadFileMulti] file id [" + id + "]: " + msg);
+	}
+	
+	private void warn(String msg)
+	{
+		log.warn("[PluploadFileMulti] file id [" + id + "]: " + msg);
+	}
+	
+	private void error(String msg)
+	{
+		log.error("[PluploadFileMulti] file id [" + id + "]: " + msg);
+	}
 
 	protected void prepare(String upload_uri, int chunk_size, int retries, String cookie)
 			throws URISyntaxException, IOException {
-		log.info("prepare trying to fetch info from: " + upload_uri);
+		info("Preparing to fetch info from " + upload_uri);
 		if(size == 0){
 			throw new IOException("Dude, file is empty!");
 		}
@@ -88,13 +108,12 @@ public class PluploadFileMulti /*extends Thread*/{
 
 	private void doUpload() throws ClientProtocolException, UnsupportedEncodingException, IOException, ParseException, URISyntaxException, NoSuchAlgorithmException{	
 		if(overwrite){
-			log.info("doUpload: overwriting");
 			uploadChunks();			
 		}
 		else {
 			Map<String, String> result = uploader.probe(getProbeUri());	
 			String server_status = result.get("status");
-			log.info("doUpload: server status: " + server_status);
+			info("Server status is " + server_status);
 			
 			if (server_status.equals("uploading")) {
 				onFileUploading(result); 
@@ -109,21 +128,26 @@ public class PluploadFileMulti /*extends Thread*/{
 	}
 	
 	private void onFileUploading(Map<String, String> result) throws IOException, NoSuchAlgorithmException, ParseException, URISyntaxException{
-		log.info("onFileUpload: Status from server: " + result);
+		info("Server status is " + result);
 		chunk_server = Integer.parseInt(result.get("chunk"));
 		int chunks_server = Integer.parseInt(result.get("chunks"));
 		if (chunks_server == chunks) { 
 			md5hex_server_total = result.get("md5");
 			skipUploadedChunks();
 			if(!checkIntegrity()){
+				info("Integrity check of partial upload failed, overwriting file");
 				overwrite = true;
 				doUpload();
 				return;
 			}
+			else
+			{
+				info("Integrity check of partial upload succeeded, resuming upload");
+			}
 			uploadChunks();
 		}
 		else {
-			log.info("onFileUploading: File modified starting over ...");
+			info("File modified starting over");
 			// file is modified for sure, so don't run through all the chunks
 			uploadChunks();
 		}
@@ -131,7 +155,7 @@ public class PluploadFileMulti /*extends Thread*/{
 	
 	public void upload(String upload_uri, int chunk_size, int retries, String cookie)
 			throws IOException, NoSuchAlgorithmException, URISyntaxException, ParseException {
-		log.info("upload: file " + id + " " + upload_uri + " " + chunk_size + " " + retries + " " + cookie);
+		info("Uploading file " + id + " " + upload_uri + " " + chunk_size + " " + retries + " " + cookie);
 		prepare(upload_uri, chunk_size, retries, cookie);
 		
 		Thread uploadThread = new Thread(){
@@ -155,7 +179,7 @@ public class PluploadFileMulti /*extends Thread*/{
 	}
 
 	public void skipUploadedChunks() throws IOException {
-		log.info("skipUploadedChunks: skipping already uploaded chunks");
+		info("Skipping already uploaded chunks");
 		while(chunk <= chunk_server){
 			int bytes_read = stream.read(buffer);
 			// the finished check and integrity check is done in JS
@@ -170,13 +194,12 @@ public class PluploadFileMulti /*extends Thread*/{
 	}
 
 	public boolean checkIntegrity() {
-		log.info("Checking integrity ...");
+		info("Checking integrity");
 		return HashUtil.hexdigest(md5_total, true).equals(md5hex_server_total);
 	}
 
 	public void uploadChunks() throws NoSuchAlgorithmException,
 			ClientProtocolException, URISyntaxException, IOException {
-		log.debug("uploadChunks: uploading ...");
 		while(chunk != chunks){
 			int bytes_read = stream.read(buffer);
 			MessageDigest md5_chunk = MessageDigest.getInstance("MD5");
@@ -187,6 +210,7 @@ public class PluploadFileMulti /*extends Thread*/{
 			md5hex_total = HashUtil.hexdigest(md5_total, true);
 			md5hex_chunk = HashUtil.hexdigest(md5_chunk);
 
+			info("Uploading chunk " + chunk + " of " + chunks);
 			uploader.sendChunk(buffer, bytes_read, chunk, chunks, name,
 					getUploadUri());
 
@@ -247,6 +271,11 @@ public class PluploadFileMulti /*extends Thread*/{
 		",\"size\":" + size + 
 		",\"id\":\"" + id + "\"" +
 		"}";
+	}
+	
+	public String getName()
+	{
+		return this.name;
 	}
 
 }

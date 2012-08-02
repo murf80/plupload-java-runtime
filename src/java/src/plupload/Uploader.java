@@ -79,12 +79,32 @@ public class Uploader {
 			}
 		}
 		
-		log.debug("created new uploader with id " + uploader_id);
+		info("Created new uploader");
+	}
+	
+	private void debug(String msg)
+	{
+		log.debug("[Uploader] id [" + uploader_id + "]: " + msg);
+	}
+	
+	private void info(String msg)
+	{
+		log.info("[Uploader] id [" + uploader_id + "]: " + msg);
+	}
+	
+	private void warn(String msg)
+	{
+		log.warn("[Uploader] id [" + uploader_id + "]: " + msg);
+	}
+	
+	private void error(String msg)
+	{
+		log.error("[Uploader] id [" + uploader_id + "]: " + msg);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void setFileFilter(final String description, final String[] filters) {
-		log.debug("setFileFilter[" + uploader_id + "]: " + description + " " + Arrays.toString(filters));
+		info("Adding file filter: " + description + " " + Arrays.toString(filters));
 		try {
 			AccessController.doPrivileged(new PrivilegedExceptionAction() {
 				public Object run() throws IOException, Exception {
@@ -108,9 +128,8 @@ public class Uploader {
 	@SuppressWarnings("unchecked")
 	public void uploadFile(final String id, final String url,
 			final String cookie, final int chunk_size, final int retries) {
-		log.debug("uploadFile[" + uploader_id + "]: file id: " + id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		final PluploadFileMulti file = files.get(id);
-		log.debug("uploadFile[" + uploader_id + "]: uploading file with id " + file.id);
+		info("Uploading file: file id: " + file.id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		if (file != null) {
 			current_file = file;
 		}
@@ -135,18 +154,18 @@ public class Uploader {
 	}
 
 	public void removeFile(String id) {
-		log.debug("removeFile[" + uploader_id + "]");
+		info("Removing file: file id: " + id);
 		files.remove(id);
 	}
 
 	public void clearFiles() {
-		log.debug("clearFiles[" + uploader_id + "]");
+		info("Clearing all files");
 		files.clear();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void openFileDialog() {
-		log.debug("openFileDialog[" + uploader_id + "]");
+		info("Opening file dialog");
 		if (dialog_open) {
 			// FIXME: bring openDialog to front
 			return;
@@ -185,17 +204,17 @@ public class Uploader {
 	}
 
 	private void publishIOError(Exception e) {
-		log.debug("publishIOError[" + uploader_id + "]");
+		info("Publishing IO error: " + e.getMessage());
 		parentInstance.publishEvent(uploader_id, Event.IO_ERROR, new PluploadError(e.getMessage(), current_file.id));
 	}
 
 	private void publishError(Exception e) {
-		log.debug("publishError[" + uploader_id + "]");
+		info("Publishing error: " + e.getMessage());
 		parentInstance.publishEvent(uploader_id, Event.GENERIC_ERROR, new PluploadError(e.getMessage(), current_file.id));
 	}
 
 	private void selectEvent(PluploadFileMulti file) {
-		log.debug("selectEvent[" + uploader_id + "]");
+		info("Processing select event for file " + file.getName() + "[" + file.id + "]");
 		// handles file add from file chooser
 		files.put(file.id + "", file);
 

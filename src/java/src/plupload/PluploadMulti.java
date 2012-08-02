@@ -54,8 +54,29 @@ public class PluploadMulti extends Applet2 {
 		
 		uploaders = new HashMap<String, Uploader>();
 		plupload_id = getParameter("id");
-		log.debug("init[" + plupload_id + "]");
+		info("Initialized with id " + plupload_id);
 		publishEvent(plupload_id, Event.INIT);
+	}
+	
+	
+	private void debug(String msg)
+	{
+		log.debug("[PluploadMulti] applet id [" + plupload_id + "]: " + msg);
+	}
+	
+	private void info(String msg)
+	{
+		log.info("[PluploadMulti] applet id [" + plupload_id + "]: " + msg);
+	}
+	
+	private void warn(String msg)
+	{
+		log.warn("[PluploadMulti] applet id [" + plupload_id + "]: " + msg);
+	}
+	
+	private void error(String msg)
+	{
+		log.error("[PluploadMulti] applet id [" + plupload_id + "]: " + msg);
 	}
 	
 	private Uploader getUploader(String id) {
@@ -64,11 +85,11 @@ public class PluploadMulti extends Applet2 {
 		if (uploaders != null && !uploaders.isEmpty())
 		{
 			u = uploaders.get(id);
-			log.debug("getUploader: found uploader for id " + id);
+			info("Found uploader with id " + id);
 		}
 		else
 		{
-			log.debug("getUploader: no uploader for id " + id);
+			error("Could not find uploader with id " + id);
 		}
 		
 		return u;
@@ -77,14 +98,14 @@ public class PluploadMulti extends Applet2 {
 	@SuppressWarnings("unchecked")
 	public void addUploader() {
 		Uploader u = new Uploader(this);
-		log.debug("Adding uploader " + u.uploader_id + " to collection of uploaders");
+		info("Adding uploader " + u.uploader_id + ", there are now " + uploaders.size() + " uploaders");
 		uploaders.put(u.uploader_id, u);
 		publishEvent(plupload_id, Event.ADDED_UPLOADER, "", u.uploader_id);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void setFileFilter(String uploader_id, final String description, final String[] filters) {
-		log.debug("setFileFilter[" + uploader_id + "]: " + description + " " + Arrays.toString(filters));
+		info("Adding file filter to uploader with id " + uploader_id + ": " + description + " " + Arrays.toString(filters));
 		final Uploader u = getUploader(uploader_id);
 		u.setFileFilter(description, filters);
 	}
@@ -93,26 +114,26 @@ public class PluploadMulti extends Applet2 {
 	@SuppressWarnings("unchecked")
 	public void uploadFile(String uploader_id, final String id, final String url,
 			final String cookie, final int chunk_size, final int retries) {
-		log.debug("uploadFile[" + uploader_id + "]: file id: " + id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
+		info("Uploading file for uploader with id " + uploader_id + ": file id: " + id + " url: " + url + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		final Uploader u = getUploader(uploader_id);
 		u.uploadFile(id, url, cookie, chunk_size, retries);
 	}
 
 	public void removeFile(String uploader_id, String id) {
-		log.debug("removeFile[" + uploader_id + "]");
+		info("Removing file from uploader with id " + uploader_id + ": file id: " + id);
 		final Uploader u = getUploader(uploader_id);
 		u.removeFile(id);
 	}
 
 	public void clearFiles(String uploader_id) {
-		log.debug("clearFiles[" + uploader_id + "]");
+		info("Clearing all files from uploader with id " + uploader_id);
 		final Uploader u = getUploader(uploader_id);
 		u.clearFiles();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void openFileDialog(String uploader_id) {
-		log.debug("openFileDialog[" + uploader_id + "]");
+		info("Opening file dialog for uploader with id " + uploader_id);
 		final Uploader u = getUploader(uploader_id);
 		u.openFileDialog();
 	}
@@ -120,6 +141,7 @@ public class PluploadMulti extends Applet2 {
 	public void publishEvent(String uploader_id, Event e, Object ... args) {
 		// is this really the way to do this?
 		// prepend args with upload id.
+		info("Publishing event for uploader with id " + uploader_id + ": event name " + e.getName());
 		log.debug("publishEvent[" + uploader_id + "]: " + e.getName());
 		Object[] new_args = new Object[args.length + 2];
 		new_args[0] = plupload_id;

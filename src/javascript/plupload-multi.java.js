@@ -5,10 +5,11 @@
 
   var uploadAppletInstances = {};
   var appletLoaded = false;
+  var multi_upload_instance_files_cache = {};
 
   plupload.applet = {
 
-    pluploadjavatrigger : function(eventname, id, fileobjstring, uploaderInstanceId) {
+    pluploadjavatrigger : function(eventname, id, fileobjstring, multi_upload_instance_id) {
       // FF / Safari mac breaks down if it's not detached here
       // can't do java -> js -> java
       setTimeout(function() {
@@ -16,7 +17,7 @@
           var uploader = uploadAppletInstances[id], i, args;
           var file = fileobjstring ? eval('(' + fileobjstring + ')') : "";
           if (uploader) {
-            uploader.trigger('applet:' + eventname, file, uploaderInstanceId);
+            uploader.trigger('applet:' + eventname, file, multi_upload_instance_id);
           }
       }, 0);
     }
@@ -95,7 +96,7 @@
 	      });
       }
       
-      uploader.bind("Applet:AddedUploader", function(up, file, uploaderInstanceId) {
+      uploader.bind("Applet:AddedUploader", function(up, file, multi_upload_instance_id) {
         var filters = uploader.settings.filters;
         var extensions = [];
         var description = "";
@@ -111,9 +112,9 @@
                   extensions.push(filterExtensions[j]);
               }
           }
-          getApplet().setFileFilter(uploaderInstanceId, description, extensions);
+          getApplet().setFileFilter(multi_upload_instance_id, description, extensions);
           
-          up.trigger('UploaderAdded', uploaderInstanceId);
+          up.trigger('UploaderAdded', multi_upload_instance_id);
         }
       });
 
@@ -146,8 +147,16 @@
       uploader.bind("AddUploader", function(up){
         getApplet().addUploader();
       });
+      
+      uploader.bind("UploadFiles", function(up, multi_upload_instance_id) {
+          var files = multi_upload_instance_files_cache[multi_upload_instance_id];
+          
+          for (i = files.length - 1; i >= 0; i--) {
+            up.trigger('UploadFile', files[i], multi_upload_instance_id);
+          }
+      });
 
-      uploader.bind("UploadFile", function(up, file) {
+      uploader.bind("UploadFile", function(up, file, multi_upload_instance_id) {
           var settings = up.settings,
               abs_url = location.protocol + '//' + location.host;
 
@@ -162,21 +171,23 @@
             abs_url += location.pathname.slice(0, location.pathname.lastIndexOf('/')) + '/' + settings.url;
           }
 
-          getApplet().uploadFile(up.id, file.id, abs_url, document.cookie, settings.chunk_size || 0, settings.retries || 3);
+          getApplet().uploadFile(multi_upload_instance_id, file.id, abs_url, document.cookie, settings.chunk_size || 0, settings.retries || 3);
       });
 
-      uploader.bind("SelectFiles", function(up, uploaderInstanceId){
-        getApplet().openFileDialog(uploaderInstanceId);
+      uploader.bind("SelectFiles", function(up, multi_upload_instance_id){
+        getApplet().openFileDialog(multi_upload_instance_id);
       });
 
-      uploader.bind("Applet:UploadProcess", function(up, javaFile, uploaderInstanceId) {
-        var file = up.getFile(javaFile.id),
-            finished = javaFile.chunk === javaFile.chunks;
+      uploader.bind("Applet:UploadProcess", function(up, javaFile, multi_upload_instance_id) {
+        //var file = up.getFile(javaFile.id),
+        var file = new plupload.File(javaFile.id, javaFile.name, javaFile.size)
+        var finished = javaFile.chunk === javaFile.chunks;
 
         if (file.status != plupload.FAILED) {
           file.loaded = javaFile.loaded;
           file.size = javaFile.size;
-          up.trigger('UploadProgress', file, uploaderInstanceId);
+          file.percent = file.size > 0 ? Math.ceil(file.loaded / file.size * 100) : 100;
+          up.trigger('MultiUploadProgress', file, multi_upload_instance_id);
         }
         else{
           alert("uploadProcess status failed");
@@ -185,19 +196,24 @@
         if (finished) {
           file.status = plupload.DONE;
           up.trigger('FileUploaded', file, {
-            response : "File uploaded"
-          });
+            response : "File uploaded"},
+            multi_upload_instance_id
+          );
         }
       });
 
-      uploader.bind("Applet:SelectFiles", function(up, file, uploaderInstanceId) {
-        var i, files = [], id;
-
+      uploader.bind("Applet:SelectFiles", function(up, file, multi_upload_instance_id) {
+        var files = multi_upload_instance_files_cache[multi_upload_instance_id];
+        
+        if (!files)
+        	files = [];
+        
         files.push(new plupload.File(file.id, file.name, file.size));
 
         // Trigger FilesAdded event if we added any
         if (files.length) {
-          uploader.trigger("FilesAdded", files, uploaderInstanceId);
+          multi_upload_instance_files_cache[multi_upload_instance_id] = files;
+          uploader.trigger("FilesAdded", files, multi_upload_instance_id);
         }
       });
 
