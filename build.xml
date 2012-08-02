@@ -63,6 +63,7 @@
       -libraryjars ${java.home}/lib/rt.jar
       -libraryjars ${java.home}/lib/plugin.jar
       -keep public class plupload.Plupload
+      -keep public class plupload.PluploadMulti
       -keep public class java.net.IDN
       -keepclassmembers class java.net.IDN{
        java.lang.String toUnicode(java.lang.String);
@@ -73,6 +74,15 @@
         void removeFile(java.lang.String);
         void clearFiles();
         void openFileDialog();
+      }
+      -keepclassmembers class plupload.PluploadMulti {
+        void addUploader();
+        void getUploader(java.lang.String);
+        void setFileFilter(java.lang.String,java.lang.String,java.lang.String[]);
+        void uploadFile(java.lang.String, java.lang.String, java.lang.String, java.lang.String, int, int);
+        void removeFile(java.lang.String,java.lang.String);
+        void clearFiles(java.lang.String);
+        void openFileDialog(java.lang.String);
       }
     </proguard>
     <move file="plupload.java.min.jar" tofile="plupload.java.jar" />
