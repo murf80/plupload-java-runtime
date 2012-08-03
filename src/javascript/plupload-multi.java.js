@@ -117,6 +117,12 @@
           up.trigger('UploaderAdded', multi_upload_instance_id);
         }
       });
+      
+      uploader.bind("Applet:RemovedUploader", function(up, file, multi_upload_instance_id) {
+          delete multi_upload_instance_files_cache[multi_upload_instance_id];
+          
+          up.trigger('UploaderRemoved', multi_upload_instance_id);
+      });
 
       uploader.bind("Applet:Init", function() {
         initialized = true;
@@ -146,6 +152,10 @@
       
       uploader.bind("AddUploader", function(up, multi_upload_instance_id, uploader_url){
         getApplet().addUploader(uploader_url, multi_upload_instance_id);
+      });
+      
+      uploader.bind("CancelUpload", function(up, multi_upload_instance_id, uploader_url){
+        getApplet().removeUploader(multi_upload_instance_id);
       });
       
       uploader.bind("UploadFiles", function(up, multi_upload_instance_id) {
@@ -186,6 +196,10 @@
             multi_upload_instance_id
           );
         }
+      });
+      
+      uploader.bind("FileUploaded", function(up, file, response, multi_upload_instance_id){
+        getApplet().removeUploader(multi_upload_instance_id);
       });
 
       uploader.bind("Applet:SelectFiles", function(up, file, multi_upload_instance_id) {

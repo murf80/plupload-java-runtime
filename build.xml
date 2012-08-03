@@ -76,7 +76,9 @@
         void openFileDialog();
       }
       -keepclassmembers class plupload.PluploadMulti {
+        void addUploader(java.lang.String);
         void addUploader(java.lang.String,java.lang.String);
+        void removeUploader(java.lang.String);
         void getUploader(java.lang.String);
         void uploadFile(java.lang.String, java.lang.String, java.lang.String, int, int);
         void setFileFilter(java.lang.String,java.lang.String,java.lang.String[]);

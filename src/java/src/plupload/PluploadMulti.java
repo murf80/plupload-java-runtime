@@ -95,8 +95,8 @@ public class PluploadMulti extends Applet2 {
 		return u;
 	}
 	
-	public void addUploader(String url, String uploaderId) {
-		Uploader u = new Uploader(this, url, uploaderId);
+	public void addUploader(String url, String uploader_id) {
+		Uploader u = new Uploader(this, url, uploader_id);
 		uploaders.put(u.uploader_id, u);
 		info("Added uploader " + u.uploader_id + " for url " + u.url + ", there are now " + uploaders.size() + " uploaders");
 		publishEvent(plupload_id, Event.ADDED_UPLOADER, "", u.uploader_id);
@@ -105,11 +105,22 @@ public class PluploadMulti extends Applet2 {
 	public void addUploader(String url) {
 		addUploader(url, null);
 	}
+	
+	public void removeUploader(String uploader_id) {
+		final Uploader u = getUploader(uploader_id);
+		if (u != null) {
+			uploaders.remove(u.uploader_id);
+			info("Removing uploader " + u.uploader_id + " for url " + u.url + ", there are now " + uploaders.size() + " uploaders");
+			publishEvent(plupload_id, Event.REMOVED_UPLOADER, "", u.uploader_id);
+		}
+	}
 
 	public void setFileFilter(String uploader_id, final String description, final String[] filters) {
 		info("Adding file filter to uploader with id " + uploader_id + ": " + description + " " + Arrays.toString(filters));
 		final Uploader u = getUploader(uploader_id);
-		u.setFileFilter(description, filters);
+		
+		if (u != null)
+			u.setFileFilter(description, filters);
 	}
 
 	// LiveConnect calls from JS
@@ -118,25 +129,33 @@ public class PluploadMulti extends Applet2 {
 			final int chunk_size, final int retries) {
 		info("Uploading file for uploader with id " + uploader_id + ": file id: " + file_id + " cookie: " + cookie + " chunk_size: " + chunk_size + " retries: " + retries);
 		final Uploader u = getUploader(uploader_id);
-		u.uploadFile(file_id, cookie, chunk_size, retries);
+		
+		if (u != null)
+			u.uploadFile(file_id, cookie, chunk_size, retries);
 	}
 
 	public void removeFile(String uploader_id, String id) {
 		info("Removing file from uploader with id " + uploader_id + ": file id: " + id);
 		final Uploader u = getUploader(uploader_id);
-		u.removeFile(id);
+		
+		if (u != null)
+			u.removeFile(id);
 	}
 
 	public void clearFiles(String uploader_id) {
 		info("Clearing all files from uploader with id " + uploader_id);
 		final Uploader u = getUploader(uploader_id);
-		u.clearFiles();
+		
+		if (u != null)
+			u.clearFiles();
 	}
 
 	public void openFileDialog(String uploader_id) {
 		info("Opening file dialog for uploader with id " + uploader_id);
 		final Uploader u = getUploader(uploader_id);
-		u.openFileDialog();
+		
+		if (u != null)
+			u.openFileDialog();
 	}
 	
 	public void publishEvent(String uploader_id, Event e, Object ... args) {
@@ -157,6 +176,7 @@ public class PluploadMulti extends Applet2 {
 		CLICK("Click"), 
 		INIT("Init"),
 		ADDED_UPLOADER("AddedUploader"),
+		REMOVED_UPLOADER("RemovedUploader"),
 		SELECT_FILE("SelectFiles"), 
 		UPLOAD_PROCESS("UploadProcess"), 
 		UPLOAD_CHUNK_COMPLETE("UploadChunkComplete"), 
