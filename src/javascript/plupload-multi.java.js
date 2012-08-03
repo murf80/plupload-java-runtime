@@ -225,22 +225,24 @@
         }
       });
 
-      uploader.bind("Applet:GenericError", function(up, err) {
+      uploader.bind("Applet:GenericError", function(up, err, multi_upload_instance_id) {
         uploader.trigger('Error', {
           code : plupload.GENERIC_ERROR,
           message : 'Generic error.',
           details : err.message,
-          file : uploader.getFile(err.id)
-        });
+          file : uploader.getFile(err.id)},
+          multi_upload_instance_id
+        );
       });
 
-      uploader.bind("Applet:IOError", function(up, err) {
+      uploader.bind("Applet:IOError", function(up, err, multi_upload_instance_id) {
         uploader.trigger('Error', {
           code : plupload.IO_ERROR,
           message : 'IO error.',
           details : err.message,
-          file : uploader.getFile(err.id)
-        });
+          file : uploader.getFile(err.id)},
+          multi_upload_instance_id
+        );
       });
 
       uploader.bind("FilesRemoved", function(up, files) {
