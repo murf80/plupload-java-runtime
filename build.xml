@@ -78,6 +78,7 @@
       -keepclassmembers class plupload.PluploadMulti {
         void addUploader(java.lang.String);
         void addUploader(java.lang.String,java.lang.String);
+        void setMultiSelection(java.lang.String,java.lang.Boolean);
         void removeUploader(java.lang.String);
         void getUploader(java.lang.String);
         void uploadFile(java.lang.String, java.lang.String, java.lang.String, int, int);

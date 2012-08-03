@@ -122,6 +122,14 @@ public class PluploadMulti extends Applet2 {
 		if (u != null)
 			u.setFileFilter(description, filters);
 	}
+	
+	public void setMultiSelection(String uploader_id, final Boolean enabled) {
+		info("Setting multiselection enabled to " + enabled + " for uploader with id " + uploader_id);
+		final Uploader u = getUploader(uploader_id);
+		
+		if (u != null)
+			u.setMultiSelection(enabled);
+	}
 
 	// LiveConnect calls from JS
 	@SuppressWarnings("unchecked")

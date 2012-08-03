@@ -132,7 +132,26 @@ public class Uploader {
 				publishError(ex);
 			}
 		}
-
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void setMultiSelection(final Boolean enabled) {
+		info("Setting multiselection enabled to " + enabled);
+		try {
+			AccessController.doPrivileged(new PrivilegedExceptionAction() {
+				public Object run() throws IOException, Exception {
+					dialog.setMultiSelectionEnabled(enabled);
+;					return null;
+				}
+			});
+		} catch (PrivilegedActionException e) {
+			Exception ex = e.getException();
+			if (ex instanceof IOException) {
+				publishIOError(ex);
+			} else if (ex instanceof Exception) {
+				publishError(ex);
+			}
+		}
 	}
 
 	// LiveConnect calls from JS

@@ -97,7 +97,7 @@
       }
       
       uploader.bind("Applet:AddedUploader", function(up, file, multi_upload_instance_id) {
-        var filters = uploader.settings.filters;
+        var filters = up.settings.filters;
         var extensions = [];
         var description = "";
 
@@ -113,6 +113,14 @@
               }
           }
           getApplet().setFileFilter(multi_upload_instance_id, description, extensions);
+          
+          var multi_selection = true;
+	      if (up.settings.multi_selection !== undefined)
+	      {
+	        multi_selection = up.settings.multi_selection;
+	      }
+      
+          getApplet().setMultiSelection(multi_upload_instance_id, multi_selection);
           
           up.trigger('UploaderAdded', multi_upload_instance_id);
         }
