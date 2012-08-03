@@ -211,19 +211,17 @@ public class Uploader {
 						log.debug("openDialog finished");
 						// blocks until file selected
 						if (file_chose_return_value == JFileChooser.APPROVE_OPTION) {
-							for (File f : dialog.getSelectedFiles()) {
-								// Wiredness: If PluploadFileMulti extends Thread
-								// it just stopped here in my production
-								// environment
-								
-								// get a unique id for the file.  Needs to be
-								// unique across mutliple uploaders.
-								String uuid = UUID.randomUUID().toString();
-								uuid = uploader_id + "-" + uuid;
-								
-								PluploadFileMulti file = new PluploadFileMulti(uuid, f);
-								selectEvent(file);
-							}
+							if (dialog.isMultiSelectionEnabled()) {
+								for (File f : dialog.getSelectedFiles()) {
+									// Wiredness: If PluploadFileMulti extends Thread
+									// it just stopped here in my production
+									// environment
+									processSelectedFile(f);
+									}
+								}
+								else {
+									processSelectedFile(dialog.getSelectedFile());
+								}
 						}
 						dialog_open = false;
 					}
@@ -231,6 +229,16 @@ public class Uploader {
 				return null;
 			}
 		});
+	}
+	
+	private synchronized void processSelectedFile(File f) {
+		// get a unique id for the file.  Needs to be
+		// unique across mutliple uploaders.
+		String uuid = UUID.randomUUID().toString();
+		uuid = uploader_id + "-" + uuid;
+		
+		PluploadFileMulti file = new PluploadFileMulti(uuid, f);
+		selectEvent(file);
 	}
 
 	private void publishIOError(Exception e) {
