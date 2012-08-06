@@ -52,6 +52,9 @@
           url = uploader.settings.java_applet_url,
           log_level;
           
+      // error for upload canceled.  Here so we don't have to modify plupload.js
+      UPLOAD_CANCELED = -913;
+          
       var log_level = 5;
       if (uploader.settings.log_level !== undefined)
       {
@@ -162,7 +165,11 @@
         getApplet().addUploader(uploader_url, multi_upload_instance_id);
       });
       
-      uploader.bind("CancelUpload", function(up, multi_upload_instance_id, uploader_url){
+      uploader.bind("CancelUpload", function(up, multi_upload_instance_id, file_id){
+        getApplet().cancelUpload(multi_upload_instance_id, file_id);
+      });
+      
+      uploader.bind("RemoveUploader", function(up, multi_upload_instance_id){
         getApplet().removeUploader(multi_upload_instance_id);
       });
       
@@ -239,6 +246,16 @@
         uploader.trigger('Error', {
           code : plupload.IO_ERROR,
           message : 'IO error.',
+          details : err.message,
+          file : uploader.getFile(err.id)},
+          multi_upload_instance_id
+        );
+      });
+      
+      uploader.bind("Applet:UploadCanceledError", function(up, err, multi_upload_instance_id) {
+        uploader.trigger('Error', {
+          code : UPLOAD_CANCELED,
+          message : err.message,
           details : err.message,
           file : uploader.getFile(err.id)},
           multi_upload_instance_id

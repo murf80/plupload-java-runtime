@@ -82,6 +82,7 @@
         void removeUploader(java.lang.String);
         void getUploader(java.lang.String);
         void uploadFile(java.lang.String, java.lang.String, java.lang.String, int, int);
+        void cancelUpload(java.lang.String,java.lang.String);
         void setFileFilter(java.lang.String,java.lang.String,java.lang.String[]);
         void removeFile(java.lang.String,java.lang.String);
         void clearFiles(java.lang.String);

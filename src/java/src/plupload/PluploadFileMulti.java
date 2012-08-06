@@ -48,6 +48,7 @@ public class PluploadFileMulti /*extends Thread*/{
 	private List<FileUploadListenerMulti> file_upload_listeners = new ArrayList<FileUploadListenerMulti>();
 	private InputStream stream;
 	private HttpUploader uploader;
+	private boolean cancel_upload;
 
 	public PluploadFileMulti(String id, File file) {
 		this.id = id;
@@ -106,7 +107,7 @@ public class PluploadFileMulti /*extends Thread*/{
 		loaded = 0;
 	}
 
-	private void doUpload() throws ClientProtocolException, UnsupportedEncodingException, IOException, ParseException, URISyntaxException, NoSuchAlgorithmException{	
+	private void doUpload() throws ClientProtocolException, UnsupportedEncodingException, IOException, ParseException, URISyntaxException, NoSuchAlgorithmException, UploadCanceledException {	
 		if(overwrite){
 			uploadChunks();			
 		}
@@ -127,7 +128,7 @@ public class PluploadFileMulti /*extends Thread*/{
 		}
 	}
 	
-	private void onFileUploading(Map<String, String> result) throws IOException, NoSuchAlgorithmException, ParseException, URISyntaxException{
+	private void onFileUploading(Map<String, String> result) throws IOException, NoSuchAlgorithmException, ParseException, URISyntaxException, UploadCanceledException{
 		info("Server status is " + result);
 		chunk_server = Integer.parseInt(result.get("chunk"));
 		int chunks_server = Integer.parseInt(result.get("chunks"));
@@ -165,6 +166,9 @@ public class PluploadFileMulti /*extends Thread*/{
 				try{
 					doUpload();
 				}
+				catch(UploadCanceledException e){
+					uploadCanceledErrorAction(e);
+				}
 				catch(IOException e){
 					e.printStackTrace();
 					ioErrorAction(e);
@@ -176,6 +180,14 @@ public class PluploadFileMulti /*extends Thread*/{
 			}
 		};
 		uploadThread.start();
+	}
+	
+	public void cancelUpload() {
+		if (uploader != null)
+		{
+			info("Canceling upload for file " + name + " (" + id + ")");
+			cancel_upload = true;
+		}
 	}
 
 	public void skipUploadedChunks() throws IOException {
@@ -199,8 +211,14 @@ public class PluploadFileMulti /*extends Thread*/{
 	}
 
 	public void uploadChunks() throws NoSuchAlgorithmException,
-			ClientProtocolException, URISyntaxException, IOException {
+			ClientProtocolException, URISyntaxException, IOException,
+			UploadCanceledException {
 		while(chunk != chunks){
+			
+			if (cancel_upload) {
+				throw new UploadCanceledException("User canceled upload");
+			}
+			
 			int bytes_read = stream.read(buffer);
 			MessageDigest md5_chunk = MessageDigest.getInstance("MD5");
 
@@ -247,6 +265,12 @@ public class PluploadFileMulti /*extends Thread*/{
 	private void uploadProcessAction() {
 		for (FileUploadListenerMulti f : file_upload_listeners) {
 			f.uploadProcess(this);
+		}
+	}
+	
+	private void uploadCanceledErrorAction(UploadCanceledException e){
+		for(FileUploadListenerMulti f : file_upload_listeners){
+			f.uploadCanceled(e);
 		}
 	}
 	

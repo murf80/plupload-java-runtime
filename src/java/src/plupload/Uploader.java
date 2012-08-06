@@ -175,7 +175,10 @@ public class Uploader {
 			});
 		} catch (PrivilegedActionException e) {
 			Exception ex = e.getException();
-			if (ex instanceof IOException) {
+			if (ex instanceof UploadCanceledException) {
+				publishUploadCanceled(ex);
+			}
+			else if (ex instanceof IOException) {
 				publishIOError(ex);
 			} else {
 				publishError(ex);
@@ -184,7 +187,7 @@ public class Uploader {
 	}
 
 	public void removeFile(String id) {
-		info("Removing file: file id: " + id);
+		info("Removing file with id: " + id);
 		files.remove(id);
 	}
 
@@ -231,6 +234,16 @@ public class Uploader {
 		});
 	}
 	
+	public void cancelUpload(String file_id) {
+		PluploadFileMulti f = files.get(file_id);
+		
+		if (f != null)
+		{
+			info("Canceling upload for file " + f.getName() + " (" + f.id + ")");
+			f.cancelUpload();
+		}
+	}
+	
 	private synchronized void processSelectedFile(File f) {
 		// get a unique id for the file.  Needs to be
 		// unique across mutliple uploaders.
@@ -239,6 +252,11 @@ public class Uploader {
 		
 		PluploadFileMulti file = new PluploadFileMulti(uuid, f);
 		selectEvent(file);
+	}
+	
+	private void publishUploadCanceled(Exception e) {
+		info("Publishing upload canceled error: " + e.getMessage());
+		parentInstance.publishEvent(uploader_id, Event.UPLOAD_CANCELED, new PluploadError(e.getMessage(), current_file.id));
 	}
 
 	private void publishIOError(Exception e) {
@@ -261,6 +279,12 @@ public class Uploader {
 			@Override
 			public void uploadProcess(PluploadFileMulti file) {
 				parentInstance.publishEvent(uploader_id, Event.UPLOAD_PROCESS, file);
+			}
+			
+			@Override
+			public void uploadCanceled(UploadCanceledException e) {
+				publishUploadCanceled(e);
+
 			}
 
 			@Override

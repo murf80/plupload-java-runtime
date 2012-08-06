@@ -141,6 +141,16 @@ public class PluploadMulti extends Applet2 {
 		if (u != null)
 			u.uploadFile(file_id, cookie, chunk_size, retries);
 	}
+	
+	public void cancelUpload(String uploader_id, String file_id) {
+		info("Canceling file upload for uploader with id " + uploader_id + ": file id: " + file_id);
+		final Uploader u = getUploader(uploader_id);
+		
+		if (u != null) {
+			u.cancelUpload(file_id);
+			u.removeFile(file_id);
+		}
+	}
 
 	public void removeFile(String uploader_id, String id) {
 		info("Removing file from uploader with id " + uploader_id + ": file id: " + id);
@@ -189,6 +199,7 @@ public class PluploadMulti extends Applet2 {
 		UPLOAD_PROCESS("UploadProcess"), 
 		UPLOAD_CHUNK_COMPLETE("UploadChunkComplete"), 
 		SKIP_UPLOAD_CHUNK_COMPLETE("SkipUploadChunkComplete"), 
+		UPLOAD_CANCELED("UploadCanceledError"),
 		IO_ERROR("IOError"), 
 		GENERIC_ERROR("GenericError");
 

@@ -10,4 +10,6 @@ public interface FileUploadListenerMulti {
 	
 	public void genericError(Exception e);
 	
+	public void uploadCanceled(UploadCanceledException e);
+	
 }
